@@ -1,71 +1,64 @@
-import React from "react";
-import { AutoComplete, Input } from "antd";
-import Item from "./Item";
+import React, { useState, useRef, useCallback, useEffect } from 'react'
+import AutoCompleteInput from './AutoCompleteInput'
+import Item from './Item'
 
-const renderTitle = (title) => (
-  <span>
-    {title}
-    <a
-      style={{ float: "right" }}
-      href="https://www.google.com/search?q=antd"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      more
-    </a>
-  </span>
-);
+function TapdStyleInput ({ value = [], fetchOptions, onSelect }) {
+  const [selectedItems, setSelectedItems] = useState(value)
+  const [selectedValue, setSelectedValue] = useState(null)
+  const searchRef = useRef()
 
-const renderItem = (title, count) => ({
-  value: title,
-  label: (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between"
-      }}
-    >
-      {title}
-      <span>{count}</span>
-    </div>
+  const handleContainerClick = useCallback(e => {
+    e.stopPropagation()
+    searchRef.current?.focus()
+  }, [])
+
+  const handleItemClick = useCallback(
+    v => {
+      setSelectedValue(v)
+    },
+    [setSelectedValue]
   )
-});
 
-const options = [
-  {
-    label: renderTitle("Libraries"),
-    options: [renderItem("AntDesign", 10000), renderItem("AntDesign UI", 10600)]
-  },
-  {
-    label: renderTitle("Solutions"),
-    options: [
-      renderItem("AntDesign UI FAQ", 60100),
-      renderItem("AntDesign FAQ", 30010)
-    ]
-  },
-  {
-    label: renderTitle("Articles"),
-    options: [renderItem("AntDesign design language", 100000)]
-  }
-];
+  const addSelectedItemsGenerator = useCallback(
+    i => {
+      let index = i + 1
 
-function TapdStyleInput({ value = [] }) {
+      return item => {
+        const newSelectedItems = JSON.parse(JSON.stringify(selectedItems))
+        newSelectedItems.splice(index, 0, item)
+        setSelectedItems(newSelectedItems)
+        onSelect(newSelectedItems, item)
+        setSelectedValue(null)
+      }
+    },
+    [selectedItems, onSelect, setSelectedValue]
+  )
+
+  useEffect(() => {
+    searchRef.current?.focus()
+  }, [])
+
   return (
-    <div className="container">
-      {value.map((item, i) => (
-        <Item />
+    <div className='tapd-style-input__container' onClick={handleContainerClick}>
+      {selectedItems.map(({ label, value }, i) => (
+        <Item
+          label={label}
+          value={value}
+          selectedValue={selectedValue}
+          key={value}
+          onItemClick={handleItemClick}
+          fetchOptions={fetchOptions}
+          dropdownClassName='certain-category-search-dropdown'
+          dropdownMatchSelectWidth={500}
+          onSelect={obj => addSelectedItemsGenerator(i)(obj)}
+        />
       ))}
 
-      <AutoComplete
-        dropdownClassName="certain-category-search-dropdown"
-        dropdownMatchSelectWidth={500}
-        style={{ width: 250 }}
-        options={options}
-      >
-        <Input.Search size="large" placeholder="input here" />
-      </AutoComplete>
+      {selectedItems.length === 0 && (
+        <AutoCompleteInput fetchOptions={fetchOptions} />
+      )}
     </div>
-  );
+  )
 }
 
-export default TapdStyleInput;
+export default TapdStyleInput

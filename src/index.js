@@ -1,12 +1,12 @@
-import { StrictMode } from "react";
-import ReactDOM from "react-dom";
-import "antd/lib/style/index.css";
-import App from "./App";
+import { StrictMode } from 'react'
+import ReactDOM from 'react-dom'
+import 'antd/dist/antd.css'
+import App from './App'
 
-const rootElement = document.getElementById("root");
+const rootElement = document.getElementById('root')
 ReactDOM.render(
   <StrictMode>
     <App />
   </StrictMode>,
   rootElement
-);
+)
